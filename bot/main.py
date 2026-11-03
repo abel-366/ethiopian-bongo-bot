@@ -443,6 +443,27 @@ async def _resume_active_games(application: Application) -> None:
         logger.info("Resumed an active Bongo round for chat %s.", game["chat_id"])
 
 
+def create_application(token: str, store: GameStore) -> Application:
+    """Build the bot and register all public Telegram commands."""
+    application = (
+        Application.builder()
+        .token(token)
+        .post_init(_resume_active_games)
+        .build()
+    )
+    application.bot_data["store"] = store
+
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("join", join))
+    application.add_handler(CommandHandler("card", card))
+    application.add_handler(CommandHandler("players", players))
+    application.add_handler(CommandHandler("startgame", start_game))
+    application.add_handler(CommandHandler("numbers", numbers))
+    application.add_handler(CommandHandler("check", check_card))
+    return application
+
+
 def main() -> None:
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     if not token:
@@ -460,23 +481,7 @@ def main() -> None:
 
     database_path = os.getenv("BOT_DB_PATH", "data/bongo.sqlite3")
     store = GameStore(database_path)
-
-    application = (
-        Application.builder()
-        .token(token)
-        .post_init(_resume_active_games)
-        .build()
-    )
-    application.bot_data["store"] = store
-
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("join", join))
-    application.add_handler(CommandHandler("card", card))
-    application.add_handler(CommandHandler("players", players))
-    application.add_handler(CommandHandler("startgame", start_game))
-    application.add_handler(CommandHandler("numbers", numbers))
-    application.add_handler(CommandHandler("check", check_card))
+    application = create_application(token, store)
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 

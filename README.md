@@ -68,6 +68,12 @@ python -m bot.main
 
 Keep the token in a secret manager or environment variable. Do not put it in a committed `.env` file.
 
+## Run the tests
+
+```bash
+uv run python -m unittest discover -s tests -v
+```
+
 ## Project files
 
 - `bot/main.py` — Telegram commands, group permissions, automatic draws, and announcements
