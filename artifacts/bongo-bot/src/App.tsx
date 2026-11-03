@@ -21,7 +21,7 @@ const commands = [
   { name: '/card', title: 'See your card', detail: 'Get your Bongo card for the current round. Keep it nearby as numbers are called.' },
   { name: '/players', title: 'See who’s in', detail: 'Check the current player list before the host begins.' },
   { name: '/startgame', title: 'Begin the round', detail: 'The host starts a game once everyone is ready. Agree on the start in chat first.' },
-  { name: '/numbers', title: 'Call a number', detail: 'Ask the bot to call the next number during an active game.' },
+  { name: '/numbers', title: 'Review call history', detail: 'See every number called so far. The bot draws the next number automatically.' },
   { name: '/check', title: 'Check your card', detail: 'Ask the bot to check your card against the numbers called so far.' },
   { name: '/help', title: 'Get a reminder', detail: 'Show the available commands and a quick explanation in Telegram.' },
 ];
@@ -29,15 +29,15 @@ const commands = [
 const setupLines = [
   { number: '01', title: 'Create your bot', text: 'In Telegram, open the verified BotFather account. Send /newbot, choose a display name and a unique username ending in bot. BotFather returns a token: treat it like a password.' },
   { number: '02', title: 'Invite it to the room', text: 'Add your bot to the group where you’ll play. Give it only the permissions it needs to respond. If it misses group messages, review Telegram’s bot privacy setting and the bot’s permissions.' },
-  { number: '03', title: 'Prepare the project', text: 'On the machine that will host the bot, install Python and the dependencies listed by the project. Use a virtual environment so this bot’s packages stay separate.' },
+  { number: '03', title: 'Prepare the project', text: 'On the machine that will host the bot, install the project dependencies with uv sync or pip install -r requirements.txt.' },
   { number: '04', title: 'Set the secret', text: 'Provide TELEGRAM_BOT_TOKEN to the Python process as an environment variable. Never paste it into source code, a chat, a screenshot, or a public issue.' },
-  { number: '05', title: 'Start and test', text: 'Run the project’s Python entry point, then try /start in a private chat and in your group. Follow the repository’s README for the actual filename and dependency command.' },
+  { number: '05', title: 'Start and test', text: 'Run uv run python -m bot.main, then try /start in a private chat and in your group. Keep the Python process running so the bot can call numbers.' },
 ];
 
 const hostChecks = [
   'Tell the group how to join before the first round.',
   'Give everyone time to /join and review /players.',
-  'Start only when the room is ready; call at a comfortable pace.',
+  'Start when the room is ready; let the bot call at its steady pace.',
   'Keep the game free: no betting, buy-ins, or cash prizes.',
 ];
 
@@ -158,11 +158,11 @@ function App() {
                   </div>
                   <div className="mt-6 rounded-2xl bg-[#e8deca] p-4">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] text-[#667268]">NEXT UP</span>
-                      <span className="text-[10px] text-[#667268]">Host calls at their pace</span>
+                      <span className="font-mono text-[10px] text-[#667268]">LAST CALL</span>
+                      <span className="text-[10px] text-[#667268]">Bot draws every 12 seconds</span>
                     </div>
                     <div className="mt-3 flex items-end justify-between">
-                      <span className="font-serif text-5xl leading-none tracking-tight">B 12</span>
+                      <span className="font-serif text-5xl leading-none tracking-tight">12</span>
                       <span className="font-mono text-[10px] text-[#657066]">/numbers</span>
                     </div>
                   </div>
@@ -250,7 +250,7 @@ function App() {
                 { n: '01', command: '/start', title: 'Open the door', text: 'Have people start the bot, then add it to the group where the game will happen.' },
                 { n: '02', command: '/join', title: 'Gather players', text: 'Players join from the group. Check the room with /players before the round.' },
                 { n: '03', command: '/card', title: 'Get ready', text: 'Each player asks for their card and keeps it handy for the round.' },
-                { n: '04', command: '/startgame', title: 'Begin the game', text: 'When everyone is ready, the host starts. Call /numbers as the game moves along.' },
+                { n: '04', command: '/startgame', title: 'Begin the game', text: 'When everyone is ready, a group administrator starts. The bot then calls numbers automatically.' },
               ].map((step, index) => (
                 <article className={`relative border-b border-[#d2c8b6] py-6 md:border-b-0 md:py-8 ${index > 0 ? 'md:border-l md:pl-6' : ''} ${index < 3 ? 'md:pr-6' : ''}`} key={step.n}>
                   <div className="flex items-center justify-between">
@@ -265,7 +265,7 @@ function App() {
             <div className="mt-6 flex flex-col gap-4 rounded-2xl bg-[#234b3f] px-6 py-5 text-[#f3eddf] sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
                 <UsersRound size={18} className="mt-0.5 shrink-0 text-[#e6c88f]" />
-                <p className="text-[13px] leading-6"><strong className="font-semibold">During the round:</strong> call numbers at a pace players can follow. Players can use /check to compare their card with the called numbers.</p>
+                <p className="text-[13px] leading-6"><strong className="font-semibold">During the round:</strong> the bot calls one number every 12 seconds and checks every card. Players can use /numbers to review calls and /check to verify their card.</p>
               </div>
               <a className="inline-flex shrink-0 items-center gap-2 text-[11px] font-bold uppercase tracking-[.12em] text-[#e6c88f] hover:text-white" href="#commands">See every command <ChevronRight size={15} /></a>
             </div>
@@ -351,21 +351,21 @@ function App() {
                 <article className="rounded-2xl border border-[#d4cbb9] bg-[#eee8da] p-5 md:p-6">
                   <div className="flex items-center gap-3">
                     <span className="grid h-9 w-9 place-items-center rounded-full bg-[#d7e0d2] font-mono text-xs font-bold text-[#355342]">A</span>
-                    <div><h3 className="font-serif text-xl">Use a process manager</h3><p className="text-[10px] text-[#768075]">A dependable default for a small host</p></div>
+                    <div><h3 className="font-serif text-xl">Run the worker continuously</h3><p className="text-[10px] text-[#768075]">The Replit bot workflow uses this command</p></div>
                   </div>
-                  <p className="mt-4 text-[12px] leading-5 text-[#657067]">Run the Python entry point as a service that starts on boot and restarts on failure. Keep the token in the service’s protected environment configuration, not in the unit file committed to the repository.</p>
-                  <div className="mt-4 rounded-xl bg-[#233c33] px-4 py-3 font-mono text-[11px] text-[#e7c891]">systemctl status bongo-bot</div>
+                  <p className="mt-4 text-[12px] leading-5 text-[#657067]">Start the Ethiopian Bongo Telegram Bot workflow in Replit. On another host, run the same command as an always-on Python worker, with automatic restart and the token stored in that host’s secret manager.</p>
+                  <div className="mt-4 rounded-xl bg-[#233c33] px-4 py-3 font-mono text-[11px] text-[#e7c891]">uv run python -m bot.main</div>
                 </article>
                 <article className="rounded-2xl border border-[#d4cbb9] bg-[#eee8da] p-5 md:p-6">
                   <div className="flex items-center gap-3">
                     <span className="grid h-9 w-9 place-items-center rounded-full bg-[#f1dbc7] font-mono text-xs font-bold text-[#9b523a]">B</span>
                     <div><h3 className="font-serif text-xl">Or use a managed host</h3><p className="text-[10px] text-[#768075]">Set a secret, deploy, inspect logs</p></div>
                   </div>
-                  <p className="mt-4 text-[12px] leading-5 text-[#657067]">Choose a service that supports persistent Python workers. Add TELEGRAM_BOT_TOKEN through the host’s secret/environment settings, deploy the documented start command, and confirm the process remains healthy after a restart.</p>
+                  <p className="mt-4 text-[12px] leading-5 text-[#657067]">Set TELEGRAM_BOT_TOKEN in the host’s secret settings, use the command shown here, and mount persistent storage for BOT_DB_PATH if rounds must survive redeploys. Run one worker per bot token.</p>
                 </article>
                 <div className="rounded-xl border border-dashed border-[#c6baa5] px-5 py-4">
                   <p className="text-[11px] font-bold">Before you publish</p>
-                  <p className="mt-1 text-[11px] leading-5 text-[#68736a]">Replace example filenames and commands with the repository’s actual entry point. The bot must be configured for polling; don’t run polling and webhook modes at the same time.</p>
+                  <p className="mt-1 text-[11px] leading-5 text-[#68736a]">Publishing this web guide does not run the bot. Deploy the Python polling worker separately, and do not run polling and webhook modes at the same time.</p>
                 </div>
               </div>
             </div>
