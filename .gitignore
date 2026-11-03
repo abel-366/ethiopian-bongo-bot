@@ -16,6 +16,18 @@ out-tsc
 
 # dependencies
 node_modules
+.pythonlibs/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Local bot data and secrets
+/data/
+.env
+.env.*
+!.env.example
 
 # IDEs and editors
 /.idea

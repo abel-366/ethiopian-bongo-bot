@@ -1,15 +1,18 @@
-# [Project name]
+# Ethiopian Bongo Telegram Bot
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A free-play Telegram group bot for Traditional Ethiopian Bongo. It creates 90-ball cards, calls numbers, tracks the round, and verifies a completed row automatically. No betting or cash prizes.
 
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/bongo-bot run dev` — run the setup and command guide
+- `uv run python -m bot.main` — run the Telegram polling bot
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required secret: `TELEGRAM_BOT_TOKEN`
+- Optional environment: `DRAW_INTERVAL_SECONDS` (default 12), `BOT_DB_PATH` (default `data/bongo.sqlite3`)
 
 ## Stack
 
@@ -22,15 +25,21 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `bot/` — Python Telegram bot and Bongo game logic
+- `README.md` — setup, commands, and deployment instructions
+- `artifacts/bongo-bot/` — web setup guide
+- `lib/api-spec/openapi.yaml` — shared API contract
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- A game uses a 90-ball, 3-by-9 card with 15 numbers and a horizontal five-number row as the winning pattern.
+- Round state is stored in SQLite so active games and cards survive process restarts when the deployment provides persistent disk.
+- The Telegram bot uses long polling; its process must run continuously and separately from the static web guide.
+- The bot token is read only from the `TELEGRAM_BOT_TOKEN` environment secret.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Players join group rounds, receive their cards privately, and see numbers called one at a time. Group admins start rounds; the bot checks all cards after every call and announces the first verified row winner.
 
 ## User preferences
 

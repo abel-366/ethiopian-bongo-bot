@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Ethiopian Bongo Bot"
+description = "A free-play Telegram bot for Traditional Ethiopian Bongo multiplayer games, with an accompanying setup and deployment guide."
+version = "1.0.0"
+id = "artifacts/bongo-bot"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25157
+
+[services.development]
+run = "pnpm --filter @workspace/bongo-bot run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/bongo-bot", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/bongo-bot/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25157"
+BASE_PATH = "/"
