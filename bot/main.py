@@ -1,4 +1,4 @@
-"""Run the Bongo Telegram bot with long polling."""
+"""Telegram game commands and application construction."""
 
 from __future__ import annotations
 
@@ -445,12 +445,7 @@ async def _resume_active_games(application: Application) -> None:
 
 def create_application(token: str, store: GameStore) -> Application:
     """Build the bot and register all public Telegram commands."""
-    application = (
-        Application.builder()
-        .token(token)
-        .post_init(_resume_active_games)
-        .build()
-    )
+    application = Application.builder().token(token).build()
     application.bot_data["store"] = store
 
     application.add_handler(CommandHandler("start", start))
@@ -462,29 +457,3 @@ def create_application(token: str, store: GameStore) -> Application:
     application.add_handler(CommandHandler("numbers", numbers))
     application.add_handler(CommandHandler("check", check_card))
     return application
-
-
-def main() -> None:
-    token = os.getenv("TELEGRAM_BOT_TOKEN")
-    if not token:
-        raise SystemExit(
-            "TELEGRAM_BOT_TOKEN is missing. Add it as a Replit Secret or environment variable."
-        )
-
-    logging.basicConfig(
-        level=os.getenv("LOG_LEVEL", "INFO").upper(),
-        format="%(asctime)s %(levelname)s %(name)s %(message)s",
-    )
-    redaction_filter = SecretRedactionFilter(token)
-    for handler in logging.getLogger().handlers:
-        handler.addFilter(redaction_filter)
-
-    database_path = os.getenv("BOT_DB_PATH", "data/bongo.sqlite3")
-    store = GameStore(database_path)
-    application = create_application(token, store)
-
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
-
-
-if __name__ == "__main__":
-    main()

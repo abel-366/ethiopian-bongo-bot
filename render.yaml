@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ethiopian-bongo-telegram-bot
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn bot.web:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_WEBHOOK_SECRET
+        sync: false
+      - key: DRAW_INTERVAL_SECONDS
+        value: "12"
+      - key: BOT_DB_PATH
+        value: data/bongo.sqlite3

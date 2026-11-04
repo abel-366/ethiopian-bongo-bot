@@ -340,32 +340,32 @@ function App() {
             <div className="grid gap-8 md:grid-cols-[.8fr_1.2fr]">
               <div>
                 <p className="mb-4 text-[10px] font-bold uppercase tracking-[.22em] text-[#b9553d]">05 / Keep it running</p>
-                <h2 className="max-w-[410px] font-serif text-4xl leading-tight tracking-[-.035em] md:text-[3.2rem]">Polling needs a process that stays awake.</h2>
-                <p className="mt-5 max-w-[390px] text-sm leading-6 text-[#657067]">For long-running polling, keep one bot process alive on a reliable host. A terminal session that closes with your laptop is not a deployment plan.</p>
+                <h2 className="max-w-[410px] font-serif text-4xl leading-tight tracking-[-.035em] md:text-[3.2rem]">Telegram needs a public HTTPS endpoint.</h2>
+                <p className="mt-5 max-w-[390px] text-sm leading-6 text-[#657067]">The FastAPI service receives Telegram updates through a webhook and registers its public URL when it starts.</p>
                 <div className="mt-7 flex items-start gap-3 border-l-2 border-[#bb6248] pl-4">
                   <Radio size={16} className="mt-1 shrink-0 text-[#b9553d]" />
-                  <p className="text-xs leading-5 text-[#626e64]"><strong className="text-[#263d33]">One active poller per token.</strong> Avoid starting a second copy while the deployed process is running; competing polling sessions can disrupt updates.</p>
+                  <p className="text-xs leading-5 text-[#626e64]"><strong className="text-[#263d33]">Use one update method per token.</strong> Do not run long polling alongside the configured webhook.</p>
                 </div>
               </div>
               <div className="space-y-3">
                 <article className="rounded-2xl border border-[#d4cbb9] bg-[#eee8da] p-5 md:p-6">
                   <div className="flex items-center gap-3">
                     <span className="grid h-9 w-9 place-items-center rounded-full bg-[#d7e0d2] font-mono text-xs font-bold text-[#355342]">A</span>
-                    <div><h3 className="font-serif text-xl">Run the worker continuously</h3><p className="text-[10px] text-[#768075]">The Replit bot workflow uses this command</p></div>
+                    <div><h3 className="font-serif text-xl">Run the webhook server</h3><p className="text-[10px] text-[#768075]">Render starts Uvicorn on its assigned port</p></div>
                   </div>
-                  <p className="mt-4 text-[12px] leading-5 text-[#657067]">Start the Ethiopian Bongo Telegram Bot workflow in Replit. On another host, run the same command as an always-on Python worker, with automatic restart and the token stored in that host’s secret manager.</p>
-                  <div className="mt-4 rounded-xl bg-[#233c33] px-4 py-3 font-mono text-[11px] text-[#e7c891]">uv run python -m bot.main</div>
+                  <p className="mt-4 text-[12px] leading-5 text-[#657067]">Deploy this repository as a Render Web Service. Store TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET in Render’s environment settings.</p>
+                  <div className="mt-4 rounded-xl bg-[#233c33] px-4 py-3 font-mono text-[11px] text-[#e7c891]">uvicorn bot.web:app --host 0.0.0.0 --port $PORT</div>
                 </article>
                 <article className="rounded-2xl border border-[#d4cbb9] bg-[#eee8da] p-5 md:p-6">
                   <div className="flex items-center gap-3">
                     <span className="grid h-9 w-9 place-items-center rounded-full bg-[#f1dbc7] font-mono text-xs font-bold text-[#9b523a]">B</span>
-                    <div><h3 className="font-serif text-xl">Or use a managed host</h3><p className="text-[10px] text-[#768075]">Set a secret, deploy, inspect logs</p></div>
+                    <div><h3 className="font-serif text-xl">Know the free-tier limits</h3><p className="text-[10px] text-[#768075]">Cold starts and temporary game data</p></div>
                   </div>
-                  <p className="mt-4 text-[12px] leading-5 text-[#657067]">Set TELEGRAM_BOT_TOKEN in the host’s secret settings, use the command shown here, and mount persistent storage for BOT_DB_PATH if rounds must survive redeploys. Run one worker per bot token.</p>
+                  <p className="mt-4 text-[12px] leading-5 text-[#657067]">Render’s free service can sleep after inactivity, and its local SQLite file is lost on sleep or redeploy. Use an always-on plan and persistent storage for uninterrupted rounds.</p>
                 </article>
                 <div className="rounded-xl border border-dashed border-[#c6baa5] px-5 py-4">
                   <p className="text-[11px] font-bold">Before you publish</p>
-                  <p className="mt-1 text-[11px] leading-5 text-[#68736a]">Publishing this web guide does not run the bot. Deploy the Python polling worker separately, and do not run polling and webhook modes at the same time.</p>
+                  <p className="mt-1 text-[11px] leading-5 text-[#68736a]">Publishing this web guide does not run the bot. Deploy the FastAPI service separately, and do not run polling and webhook modes at the same time.</p>
                 </div>
               </div>
             </div>
